@@ -3,8 +3,8 @@ import './App.css'
 import business from './config/business'
 import DirectionsButton from './components/DirectionsButton'
 
-import ownerPortfolio from '../../owner_image.png'
-import heroImage from '../../ganga-static/shop-banner.jpeg'
+import ownerPortfolio from '/owner_image.png'
+import heroImage from '/shop-banner.jpeg'
 
 const navItems = [
   { label: 'Home', href: '#home' },
