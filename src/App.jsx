@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import business from './config/business'
 import DirectionsButton from './components/DirectionsButton'
+import { createPaymentRequest } from './lib/paymentService'
 
-import ownerPortfolio from '/owner_image.png'
-import heroImage from '/shop-banner.jpeg'
+import ownerPortfolio from '/owner_image-780.webp'
+import heroImage from '/shop-banner-1200.webp'
 
 const navItems = [
   { label: 'Home', href: '#home' },
@@ -119,32 +120,29 @@ const steps = [
 
 const serviceHighlights = [
   { icon: '⚡', title: 'Fast Support', text: 'Quick response for DTH, recharge and setup issues.' },
-  { icon: '📍', title: 'Local Access', text: 'Direct shop support near Pullagandlu / Pulivendula.' },
+  { icon: '📍', title: 'Local Access', text: 'Direct shop support at Poola Angallu, Pulivendula.' },
   { icon: '🛡️', title: 'Trusted Care', text: 'Professional and practical technical assistance.' },
   { icon: '💬', title: 'WhatsApp Ready', text: 'Simple communication for bookings and questions.' },
 ]
 
-const qrBlocks = Array.from({ length: 64 }, (_, index) => {
-  const row = Math.floor(index / 8)
-  const col = index % 8
-  const finderPattern =
-    (row < 3 && col < 3) ||
-    (row < 3 && col > 4) ||
-    (row > 4 && col < 3)
-
-  return finderPattern || ((row > 2 && row < 6 && col > 2 && col < 6) && ((row + col) % 2 === 0)) || ((row + col) % 5 === 0)
-})
+const heroServiceTiles = [
+  { name: 'DTH', text: 'New Connection & Recharge', color: 'pink' },
+  { name: 'CCTV', text: 'Sales • Installation & Service', color: 'blue' },
+  { name: 'RECHARGE', text: 'Mobile • DTH • Data • Bill Payments', color: 'purple' },
+  { name: 'ACCESSORIES', text: 'Mobiles • Chargers • Headphones & More', color: 'green' },
+  { name: 'XEROX', text: 'Print • Scan • Laminate', color: 'orange' },
+  { name: 'TECHNICAL', text: 'Home & Office Support', color: 'yellow' },
+]
 
 const faqs = [
-  { question: 'Do you provide new DTH connections?', answer: 'Yes. Ganga Enterprises provides assistance for new DTH connections, installation and setup for supported platforms.' },
-  { question: 'Which DTH platforms do you support?', answer: 'Tata Play, Airtel Digital TV, Videocon d2h and Sun Direct.' },
-  { question: 'Do you provide DTH installation?', answer: 'Yes. Installation, dish alignment, set-top box setup and related technical assistance are available.' },
-  { question: 'Do you provide DTH recharge assistance?', answer: 'Yes. Recharge assistance is available for supported DTH platforms.' },
-  { question: 'Do you install CCTV cameras?', answer: 'Yes. CCTV installation, configuration and technical support are available through the technician.' },
-  { question: 'Do you sell TV remotes?', answer: 'Yes. Common TV, AC and DTH/set-top box remotes may be available. Customers can contact the shop to check availability.' },
-  { question: 'Do you sell batteries?', answer: 'Yes. Common AA, AAA, lithium coin cells and other batteries may be available depending on stock.' },
-  { question: 'Where is Ganga Enterprises located?', answer: 'The shop is near Pullagandlu / Pulivendula, Andhra Pradesh, opposite APGB.' },
-  { question: 'How can I contact the technician?', answer: 'Call or WhatsApp Ganga Enterprises at 9014415590.' },
+  { question: 'Do you provide DTH installation in Pulivendula?', answer: 'Yes. Ganga Enterprises provides DTH installation, dish alignment, activation and setup support for Tata Play, Airtel Digital TV, Videocon d2h and Sun Direct in Pulivendula.' },
+  { question: 'Where is Ganga Enterprises located in Pulivendula?', answer: 'Our shop is at Poola Angallu, Pulivendula, Andhra Pradesh 516390, near Andhra Pradesh Grameena Bank (APGB) and beside Lakshmi Theatre on Parnapalli Road.' },
+  { question: 'Do you offer DTH recharge assistance in Pulivendula?', answer: 'Yes. Recharge assistance is available for supported DTH platforms, including Tata Play, Airtel Digital TV and others.' },
+  { question: 'Do you provide CCTV installation near Pulivendula?', answer: 'Yes. We provide local CCTV installation, camera configuration and troubleshooting support for homes, shops and small businesses.' },
+  { question: 'Do you sell TV remotes and accessories in Pulivendula?', answer: 'Yes. We stock or source common TV remotes, AC remotes, HDMI cables, batteries, computer mice and DTH accessories.' },
+  { question: 'Do you support Tata Play, Airtel and Sun Direct?', answer: 'Yes. Ganga Enterprises supports major DTH platforms including Tata Play, Airtel Digital TV, Videocon d2h and Sun Direct.' },
+  { question: 'Can I visit the shop for technical help?', answer: 'Yes. Customers can visit the physical shop in Pulivendula for installation support, accessories checks and direct assistance.' },
+  { question: 'How can I contact Ganga Enterprises?', answer: 'Call 9014415590 or WhatsApp 9849490171 for service support, recharge help or technical assistance.' },
 ]
 
 const serviceBenefits = [
@@ -250,7 +248,23 @@ function App() {
     setChatInput('')
   }
 
-  const handlePaymentSubmit = (event) => {
+  const paymentQr = useMemo(() => {
+    try {
+      return createPaymentRequest({
+        customerName: paymentForm.customerName,
+        phone: paymentForm.phone,
+        amount: paymentForm.amount,
+      })
+    } catch (error) {
+      return {
+        upiLink: `upi://pay?pa=${encodeURIComponent(business.upiId)}&pn=${encodeURIComponent(business.upiName)}&am=0.00&cu=INR`,
+        qrUrl: '/upi-qr-code.jpeg?v=2026-09-12-qr-final',
+        reference: 'PENDING',
+      }
+    }
+  }, [paymentForm.amount, paymentForm.customerName, paymentForm.phone])
+
+  const handlePaymentSubmit = async (event) => {
     event.preventDefault()
 
     const customerName = paymentForm.customerName.trim()
@@ -266,27 +280,58 @@ function App() {
       return
     }
 
-    const upiUrl = `upi://pay?pa=${encodeURIComponent(business.upiId)}&pn=${encodeURIComponent(business.upiName)}&am=${amount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Payment for ${customerName} - ${phone}`)}`
-
     setPaymentForm((current) => ({
       ...current,
       status: 'processing',
-      message: `Opening UPI app for ${current.customerName}...`,
+      message: `Preparing secure UPI request for ${customerName}...`,
     }))
 
     try {
-      window.location.href = upiUrl
-    } catch (error) {
-      console.error('UPI launch failed', error)
-    }
+      const response = await fetch('/api/payment/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerName,
+          phone,
+          amount,
+        }),
+      })
 
-    window.setTimeout(() => {
+      const data = await response.json()
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.message || 'Unable to create payment request.')
+      }
+
+      const payment = data.payment
+
+      try {
+        const link = document.createElement('a')
+        link.href = payment.upiLink
+        link.rel = 'noopener noreferrer'
+        link.style.position = 'absolute'
+        link.style.left = '-9999px'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      } catch (error) {
+        console.error('UPI launch failed', error)
+      }
+
       setPaymentForm((current) => ({
         ...current,
         status: 'success',
-        message: `UPI request ready. Please pay to ${business.upiId} or scan the QR code using your UPI app.`,
+        message: `UPI request ready for reference ${payment.reference}. Please pay to ${business.upiId} or scan the QR code using your UPI app.`,
       }))
-    }, 1200)
+    } catch (error) {
+      setPaymentForm((current) => ({
+        ...current,
+        status: 'error',
+        message: error.message || 'Payment request could not be created. Please try again.',
+      }))
+    }
   }
 
   const handleCopyUpiId = async () => {
@@ -350,14 +395,19 @@ function App() {
         <section className="hero-section">
           <div className="wrap hero-grid">
             <div className="hero-copy">
-              <p className="eyebrow">GANGA ENTERPRISES</p>
-              <h1>Your Trusted DTH & Technical Service Partner</h1>
-              <h2>14+ Years of DTH, CCTV & Technical Service Experience</h2>
-              <p className="lead">
-                Ganga Enterprises provides DTH installation, activation, recharge assistance,
-                technical support, CCTV installation and essential electronic accessories from our local shop near Pullagandlu,
-                Pulivendula, Andhra Pradesh.
-              </p>
+              <div className="hero-brand-banner">
+                <div className="hero-brand-mark">G</div>
+                <div className="hero-brand-title">
+                  <span className="brand-line brand-line-main">GANGA</span>
+                  <span className="brand-line brand-line-accent">ENTERPRISES</span>
+                  <span className="brand-line brand-line-tag">Your One Stop Solution...!</span>
+                </div>
+                <div className="hero-brand-badge">
+                  <span className="badge-icon">★</span>
+                  <strong>14+ YEARS OF</strong>
+                  <em>PRACTICAL EXPERIENCE</em>
+                </div>
+              </div>
 
               <div className="hero-actions">
                 <a href="tel:+919014415590" className="primary-btn">Call Now</a>
@@ -366,7 +416,7 @@ function App() {
               </div>
 
               <div className="hero-meta">
-                <span>📍 Near Pullagandlu / Pulivendula</span>
+                <span>📍 Poola Angallu, Pulivendula</span>
                 <span>📞 9014415590</span>
                 <span>🛠️ DTH • CCTV • Recharge • Accessories</span>
               </div>
@@ -379,10 +429,48 @@ function App() {
             </div>
 
             <div className="hero-visual" style={{ transform: `translateY(${Math.min(scrollY * 0.08, 18)}px)` }}>
-              <img src={heroImage} alt="Ganga Enterprises local shop and technical service" />
+              <img
+                src={heroImage}
+                srcSet="/shop-banner-800.webp 800w, /shop-banner-1200.webp 1200w"
+                sizes="(max-width: 820px) 100vw, 50vw"
+                alt="Ganga Enterprises local DTH installation and CCTV service shop in Pulivendula, Andhra Pradesh"
+                width="1200"
+                height="800"
+                loading="eager"
+                fetchPriority="high"
+              />
               <div className="floating-card">
                 <strong>Local Service</strong>
-                <span>Opposite APGB</span>
+                <span>Near APGB • Parnapalli Road</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="hero-service-strip" aria-label="Core services">
+          <div className="wrap hero-service-grid">
+            {heroServiceTiles.map((tile) => (
+              <div key={tile.name} className={`service-tile ${tile.color}`}>
+                <span className="service-icon" aria-hidden="true">{tile.name === 'DTH' ? '📡' : tile.name === 'CCTV' ? '📹' : tile.name === 'RECHARGE' ? '₹' : tile.name === 'ACCESSORIES' ? '🧰' : tile.name === 'XEROX' ? '📄' : '🛠️'}</span>
+                <strong>{tile.name}</strong>
+                <small>{tile.text}</small>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="service-scroll-section" aria-label="Scrolling services list">
+          <div className="wrap">
+            <div className="section-head center-text">
+              <p className="section-label">Our Services</p>
+              <h3>Everything Under One Roof</h3>
+            </div>
+
+            <div className="service-marquee" aria-live="polite">
+              <div className="service-marquee-track">
+                {[...dthServices, 'CCTV Installation', 'Recharge Support', 'Accessories', 'Xerox Services', 'Dish Alignment', 'Set-Top Box Setup', ...dthServices, 'CCTV Installation', 'Recharge Support', 'Accessories', 'Xerox Services', 'Dish Alignment', 'Set-Top Box Setup'].map((service, index) => (
+                  <span key={`${service}-${index}`} className="service-marquee-item">{service}</span>
+                ))}
               </div>
             </div>
           </div>
@@ -412,7 +500,16 @@ function App() {
         <section id="about" className="content-section intro-section">
           <div className="wrap intro-grid">
             <div className="intro-image-wrap">
-              <img src={ownerPortfolio} alt="Ganga Enterprises founder and service owner" />
+              <img
+                src={ownerPortfolio}
+                srcSet="/owner_image-780.webp 780w, /owner_image-1200.webp 1200w"
+                sizes="(max-width: 820px) 100vw, 42vw"
+                alt="Ganga Enterprises founder and local technical service owner in Pulivendula"
+                width="780"
+                height="780"
+                loading="lazy"
+              />
+              <div className="founder-tag">Founder: Derangula Raju</div>
             </div>
             <div className="intro-copy">
               <p className="section-label">About Ganga Enterprises</p>
@@ -747,9 +844,9 @@ function App() {
               <h4>Your Local DTH & Technical Service Shop</h4>
               <div className="location-address">
                 <p>Ganga Enterprises</p>
-                <p>Near Pullagandlu / Pulivendula</p>
-                <p>Andhra Pradesh</p>
-                <p>Opposite APGB</p>
+                <p>Poola Angallu, Pulivendula</p>
+                <p>Andhra Pradesh 516390</p>
+                <p>Near APGB • Beside Lakshmi Theatre</p>
               </div>
 
               <div className="location-actions">
@@ -764,8 +861,8 @@ function App() {
               <div className="map-header">📍 Local Shop</div>
               <div className="map-body">
                 <strong>Ganga Enterprises</strong>
-                <span>Near Pullagandlu / Pulivendula, Andhra Pradesh</span>
-                <span>Opposite APGB</span>
+                <span>Poola Angallu, Pulivendula, Andhra Pradesh 516390</span>
+                <span>Near APGB • Beside Lakshmi Theatre, Parnapalli Road</span>
               </div>
               <div className="map-buttons">
                 <DirectionsButton className="primary-btn small" label="Get Directions" />
@@ -799,21 +896,14 @@ function App() {
 
             <div className="payment-visual">
               <div className="qr-card">
-                <div className="qr-brand-row">
-                  <span className="qr-brand-mark">पे</span>
-                  <span className="qr-brand-name">PhonePe</span>
+                <div className="qr-image-wrap" aria-label="UPI QR code preview">
+                  <img
+                    className="qr-image"
+                    src={paymentQr.qrUrl}
+                    alt="UPI QR code for Ganga Enterprises payment"
+                    loading="eager"
+                  />
                 </div>
-
-                <p className="qr-heading">ACCEPTED HERE</p>
-                <p className="qr-subheading">Scan &amp; Pay Using PhonePe App</p>
-
-                <div className="qr-grid" aria-label="UPI QR code preview">
-                  {qrBlocks.map((filled, index) => (
-                    <span key={index} className={filled ? 'qr-box filled' : 'qr-box'} />
-                  ))}
-                </div>
-
-                <div className="qr-merchant">GANGADEVI DERANGULA</div>
               </div>
             </div>
 
@@ -902,14 +992,14 @@ function App() {
               <div className="contact-cta-panel">
                 <span className="contact-pill">📞 9014415590</span>
                 <span className="contact-pill">💬 9849490171</span>
-                <span className="contact-pill">📍 Opposite APGB</span>
+                <span className="contact-pill">📍 Near APGB</span>
               </div>
 
               <ul className="contact-list">
                 <li><strong>Phone:</strong> <a href="tel:+919014415590">9014415590</a></li>
                 <li><strong>WhatsApp:</strong> <a href="https://wa.me/919849490171" target="_blank" rel="noreferrer">9849490171</a></li>
-                <li><strong>Location:</strong> Near Pullagandlu / Pulivendula, Andhra Pradesh</li>
-                <li><strong>Landmark:</strong> Opposite APGB</li>
+                <li><strong>Location:</strong> Poola Angallu, Pulivendula, Andhra Pradesh 516390</li>
+                <li><strong>Landmark:</strong> Near Andhra Pradesh Grameena Bank (APGB), besides Lakshmi Theatre, Parnapalli Road</li>
               </ul>
 
               <div className="contact-actions">
@@ -1018,9 +1108,9 @@ function App() {
             <h5>Contact</h5>
             <ul>
               <li><a href="tel:+919014415590">9014415590</a></li>
-              <li>Near Pullagandlu / Pulivendula</li>
-              <li>Andhra Pradesh</li>
-              <li>Opposite APGB</li>
+              <li>Poola Angallu, Pulivendula</li>
+              <li>Andhra Pradesh 516390</li>
+              <li>Near APGB, beside Lakshmi Theatre</li>
             </ul>
           </div>
         </div>

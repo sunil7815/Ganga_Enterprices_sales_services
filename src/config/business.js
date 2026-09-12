@@ -7,12 +7,12 @@ export const business = {
   upiId: '9849490171@upi',
   upiNumber: '9849490171',
   upiName: 'Ganga Enterprises',
-  address: 'Near Pullagandlu / Pulivendula, Andhra Pradesh',
-  landmark: 'Opposite APGB',
+  address: 'Poola Angallu, Pulivendula, Andhra Pradesh 516390',
+  landmark: 'Near Andhra Pradesh Grameena Bank (APGB) and besides Lakshmi Theatre, Parnapalli Road',
   latitude: null,
   longitude: null,
   googleMapsUrl:
-    'https://www.google.com/maps/search/?api=1&query=Ganga+Enterprises+Opposite+APGB+Pullagandlu+Pulivendula+Andhra+Pradesh',
+    'https://www.google.com/maps/search/?api=1&query=Ganga+Enterprises+Poola+Angallu+Pulivendula+Andhra+Pradesh+516390',
   supportedPlatforms: ['Tata Play', 'Airtel Digital TV', 'Videocon d2h', 'Sun Direct'],
   services: [
     'DTH Installation',

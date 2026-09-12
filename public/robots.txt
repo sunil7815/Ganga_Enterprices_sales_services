@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ganga-enterprises-snowy.vercel.app/sitemap.xml

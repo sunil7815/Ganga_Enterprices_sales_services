@@ -8,13 +8,21 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:server": "node server/index.js",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server/index.js",
+    "test:payment": "node --test server/paymentService.test.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "razorpay": "^2.9.8",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "vite-plugin-sitemap": "^0.8.2"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",

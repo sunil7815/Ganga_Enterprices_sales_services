@@ -1,0 +1,22 @@
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "Ganga Enterprises",
+  "image": "https://ganga-enterprises-snowy.vercel.app/shop-banner.jpeg",
+  "description": "Ganga Enterprises provides DTH installation, activation, recharge assistance, CCTV support and essential electronic accessories near Pullagandlu / Pulivendula, Andhra Pradesh.",
+  "telephone": "+91-9014415590",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Near Pullagandlu / Pulivendula",
+    "addressLocality": "Pulivendula",
+    "addressRegion": "Andhra Pradesh",
+    "addressCountry": "IN"
+  },
+  "areaServed": "Pulivendula, Andhra Pradesh",
+  "openingHours": "Mo-Sa 09:00-21:00",
+  "priceRange": "₹₹",
+  "sameAs": [
+    "https://wa.me/919849490171",
+    "https://ganga-enterprises-snowy.vercel.app/"
+  ]
+}
